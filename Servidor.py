@@ -1,4 +1,4 @@
-import socket
+import socket   
 import threading
 
 
@@ -11,24 +11,20 @@ server.bind((host, port))
 server.listen()
 print(f"Server running on {host}:{port}")
 
+
 clients = []
 usernames = []
-
 
 def broadcast(message, _client):
     for client in clients:
         if client != _client:
             client.send(message)
 
-
 def handle_messages(client):
     while True:
         try:
             message = client.recv(1024)
-            if message == b'img':
-                receive_image(client)
-            else:
-                broadcast(message, client)
+            broadcast(message, client)
         except:
             index = clients.index(client)
             username = usernames[index]
@@ -58,18 +54,4 @@ def receive_connections():
         thread = threading.Thread(target=handle_messages, args=(client,))
         thread.start()
 
-
-def receive_image(client):
-    file_name = "received_image.png"
-    file = open(file_name, "wb")
-    img_chunk = client.recv(2048)
-    while img_chunk:
-        file.write(img_chunk)
-        img_chunk = client.recv(2048)
-    file.close()
-
-    broadcast(f"Image received from {usernames[clients.index(client)]}".encode("utf-8"), client)
-
-
-receive_thread = threading.Thread(target=receive_connections)
-receive_thread.start()
+receive_connections()
